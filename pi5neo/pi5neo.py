@@ -1,4 +1,3 @@
-# pi5neo/pi5neo.py
 import spidev
 import time
 
@@ -39,7 +38,7 @@ class Pi5Neo:
     def send_spi_data(self):
         """Send the raw data buffer to the NeoPixel strip via SPI"""
         spi_message = bytes(self.raw_data)
-        self.spi.xfer3(list(spi_message))  #previously spi.xfer2
+        self.spi.xfer3(list(spi_message))  # previously spi.xfer2
 
     def bitmask(self, byte, position):
         """Retrieve the value of a specific bit in a byte"""
@@ -87,3 +86,26 @@ class Pi5Neo:
                 total_bytes += 1
         self.send_spi_data()
         time.sleep(0.1)  # Short delay to ensure data is sent
+
+    def fade_led(self, index, start_color, end_color, steps=50, delay=0.05):
+        """Fade a single LED from start_color to end_color"""
+        if not (0 <= index < self.num_leds):
+            print(f"LED index {index} is out of bounds.")
+            return
+
+        # Calculate the difference in RGB values between start and end colors
+        delta_r = (end_color[0] - start_color[0]) / steps
+        delta_g = (end_color[1] - start_color[1]) / steps
+        delta_b = (end_color[2] - start_color[2]) / steps
+
+        # Gradually change the color from start to end
+        for step in range(steps + 1):
+            current_r = int(start_color[0] + (delta_r * step))
+            current_g = int(start_color[1] + (delta_g * step))
+            current_b = int(start_color[2] + (delta_b * step))
+
+            # Set the LED to the new color
+            self.set_led_color(index, current_r, current_g, current_b)
+            self.update_strip()  # Commit the change
+            time.sleep(delay)
+
